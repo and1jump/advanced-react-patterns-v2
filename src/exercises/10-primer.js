@@ -9,6 +9,14 @@ import {Switch} from '../switch'
 
 class Toggle extends React.Component {
   state = {on: false}
+  isOnControlled() {
+    return this.props.on !== undefined
+  }
+  getState() {
+    return {
+      on: this.isOnControlled() ? this.props.on : this.state.on,
+    }
+  }
   // 🐨 let's add a function that can determine whether
   // the on prop is controlled. Call it `isOnControlled`.
   // 💰 this.props.on !== undefined
@@ -18,20 +26,25 @@ class Toggle extends React.Component {
   // Call it `getState` and have it return on from
   // state if it's not controlled or props if it is.
   toggle = () => {
-    // 🐨 if the toggle is controlled, then we shouldn't
-    // be updating state. Instead we should just call
-    // `this.props.onToggle` with what the state should be
-    this.setState(
-      ({on}) => ({on: !on}),
-      () => {
-        this.props.onToggle(this.state.on)
-      },
-    )
+    if (this.isOnControlled()) {
+      this.props.onToggle(!this.getState().on)
+    } else {
+      // 🐨 if the toggle is controlled, then we shouldn't
+      // be updating state. Instead we should just call
+      // `this.props.onToggle` with what the state should be
+      this.setState(
+        ({on}) => ({on: !on}),
+        () => {
+          this.props.onToggle(this.getState().on)
+        },
+      )
+    }
   }
+
   render() {
     // 🐨 rather than getting state from this.state,
     // let's use our `getState` method.
-    const {on} = this.state
+    const {on} = this.getState()
     return <Switch on={on} onClick={this.toggle} />
   }
 }
@@ -41,7 +54,7 @@ class Toggle extends React.Component {
 // You can make all the tests pass by updating the Toggle component.
 class Usage extends React.Component {
   state = {bothOn: false}
-  handleToggle = on => {
+  handleToggle = (on) => {
     this.setState({bothOn: on})
   }
   render() {

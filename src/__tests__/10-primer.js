@@ -5,11 +5,11 @@ import {
 } from 'react-dom/test-utils'
 import chalk from 'chalk'
 import {Simulate, renderToggle} from '../../test/utils'
-import Usage, {Toggle} from '../exercises-final/10-primer'
-// import Usage, {Toggle} from '../exercises/10-primer'
+// import Usage, {Toggle} from '../exercises-final/10-primer'
+import Usage, {Toggle} from '../exercises/10-primer'
 
-const findToggleInstances = rootInstance =>
-  findAllInRenderedTree(rootInstance, c =>
+const findToggleInstances = (rootInstance) =>
+  findAllInRenderedTree(rootInstance, (c) =>
     isCompositeComponentWithType(c, Toggle),
   )
 
@@ -33,9 +33,8 @@ test('toggling either toggle toggles both', () => {
   const {container, rootInstance} = renderToggle(
     <Usage onToggle={handleToggle} />,
   )
-  const [toggleInstance1, toggleInstance2] = findToggleInstances(
-    rootInstance,
-  )
+  const [toggleInstance1, toggleInstance2] =
+    findToggleInstances(rootInstance)
   const buttons = container.querySelectorAll('button')
   const [toggleButton1, toggleButton2] = buttons
   Simulate.click(toggleButton1)
@@ -71,8 +70,8 @@ test('toggle can still be uncontrolled', () => {
 /*
 http://ws.kcd.im/?ws=react%20patterns&e=10-primer&em=
 */
-test.skip('I submitted my elaboration and feedback', () => {
-  const submitted = false // change this when you've submitted!
+test('I submitted my elaboration and feedback', () => {
+  const submitted = true // change this when you've submitted!
   expect(submitted).toBe(true)
 })
 ////////////////////////////////

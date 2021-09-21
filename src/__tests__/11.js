@@ -1,8 +1,8 @@
 import React from 'react'
 import {Switch} from '../switch'
 import {renderToggle} from '../../test/utils'
-import Usage, {Toggle} from '../exercises-final/11'
-// import Usage, {Toggle} from '../exercises/11'
+// import Usage, {Toggle} from '../exercises-final/11'
+import Usage, {Toggle} from '../exercises/11'
 
 test('renders a toggle component', () => {
   const {toggleButton, toggle, container} = renderToggle(<Usage />)
@@ -53,8 +53,8 @@ test('can still use the render prop API', () => {
 /*
 http://ws.kcd.im/?ws=react%20patterns&e=11&em=
 */
-test.skip('I submitted my elaboration and feedback', () => {
-  const submitted = false // change this when you've submitted!
+test('I submitted my elaboration and feedback', () => {
+  const submitted = true // change this when you've submitted!
   expect(submitted).toBe(true)
 })
 ////////////////////////////////

@@ -8,8 +8,17 @@ import {Switch} from '../switch'
 // an object with default values for all the properties
 // of our render prop?
 
-const callAll = (...fns) => (...args) =>
-  fns.forEach(fn => fn && fn(...args))
+const ToggleContext = React.createContext({
+  on: false,
+  toggle: () => {},
+  reset: () => {},
+  getTogglerProps: () => {},
+})
+
+const callAll =
+  (...fns) =>
+  (...args) =>
+    fns.forEach((fn) => fn && fn(...args))
 
 class Toggle extends React.Component {
   static defaultProps = {
@@ -25,8 +34,29 @@ class Toggle extends React.Component {
   }
   // 🐨 Let's define another static property here called Consumer
   // so we don't have to expose the entire ToggleContext object.
+  static Consumer = ToggleContext.Consumer
+
+  reset = () =>
+    this.internalSetState(
+      {...this.initialState, type: Toggle.stateChangeTypes.reset},
+      () => this.props.onReset(this.getState().on),
+    )
+  toggle = ({type = Toggle.stateChangeTypes.toggle} = {}) =>
+    this.internalSetState(
+      ({on}) => ({type, on: !on}),
+      () => this.props.onToggle(this.getState().on),
+    )
+  getTogglerProps = ({onClick, ...props} = {}) => ({
+    onClick: callAll(onClick, () => this.toggle()),
+    'aria-expanded': this.getState().on,
+    ...props,
+  })
+
   initialState = {
     on: this.props.initialOn,
+    toggle: this.toggle,
+    reset: this.reset,
+    getTogglerProps: this.getTogglerProps,
     // Ok, just trust me on this one... You're going to need to
     // put everything into `state` that we want to provide to our consumers.
     // That means we need to include the `reset`, `toggle`, and `getTogglerProps`
@@ -59,7 +89,7 @@ class Toggle extends React.Component {
   internalSetState(changes, callback = () => {}) {
     let allChanges
     this.setState(
-      state => {
+      (state) => {
         const combinedState = this.getState(state)
         // handle function setState call
         const changesObject =
@@ -97,44 +127,27 @@ class Toggle extends React.Component {
         // and helpers all live in the `state` anyway.
         // 🐨 Replace `this.getStateAndHelpers()` with `this.state`
         // call onStateChange with all the changes (including the type)
-        this.props.onStateChange(
-          allChanges,
-          this.getStateAndHelpers(),
-        )
+        this.props.onStateChange(allChanges, this.state)
         callback()
       },
     )
   }
-  reset = () =>
-    this.internalSetState(
-      {...this.initialState, type: Toggle.stateChangeTypes.reset},
-      () => this.props.onReset(this.getState().on),
-    )
-  toggle = ({type = Toggle.stateChangeTypes.toggle} = {}) =>
-    this.internalSetState(
-      ({on}) => ({type, on: !on}),
-      () => this.props.onToggle(this.getState().on),
-    )
-  getTogglerProps = ({onClick, ...props} = {}) => ({
-    onClick: callAll(onClick, () => this.toggle()),
-    'aria-expanded': this.getState().on,
-    ...props,
-  })
   // 🐨 remove `getStateAndHelpers` because all of our state and helpers
   // are available directly from `state` now.
-  getStateAndHelpers() {
-    return {
-      ...this.getState(),
-      toggle: this.toggle,
-      reset: this.reset,
-      getTogglerProps: this.getTogglerProps,
-    }
-  }
+
   render() {
     // Now we'll be exposing the state and helpers via React's context API.
     // 1) 🐨 replace this line with a usage of <ToggleContext.Provider> where
     // the value is `this.state` and the children is `this.props.children`.
-    return this.props.children(this.getStateAndHelpers())
+    const ui =
+      typeof this.props.children === 'function'
+        ? this.props.children(this.state)
+        : this.props.children
+    return (
+      <ToggleContext.Provider value={this.state}>
+        {ui}
+      </ToggleContext.Provider>
+    )
     // NOTE: this actually breaks the render prop API. We could preserve
     // it but I didn't want to add any more complexity to this.
     // 💯 Feel free to try to preserve the existing render prop API if you want.
@@ -150,7 +163,7 @@ class Toggle extends React.Component {
 function Nav() {
   return (
     <Toggle.Consumer>
-      {toggle => (
+      {(toggle) => (
         <nav>
           <ul>
             <li>
@@ -174,11 +187,11 @@ function NavSwitch() {
     <div className="nav-switch">
       <div>
         <Toggle.Consumer>
-          {toggle => (toggle.on ? '🦄' : 'Enable Emoji')}
+          {(toggle) => (toggle.on ? '🦄' : 'Enable Emoji')}
         </Toggle.Consumer>
       </div>
       <Toggle.Consumer>
-        {toggle => (
+        {(toggle) => (
           <Switch
             {...toggle.getTogglerProps({
               on: toggle.on,
@@ -202,7 +215,7 @@ function Header() {
 function Subtitle() {
   return (
     <Toggle.Consumer>
-      {toggle => (toggle.on ? '👩‍🏫 👉 🕶' : 'Teachers are awesome')}
+      {(toggle) => (toggle.on ? '👩‍🏫 👉 🕶' : 'Teachers are awesome')}
     </Toggle.Consumer>
   )
 }
@@ -212,7 +225,7 @@ function Title() {
     <div>
       <h1>
         <Toggle.Consumer>
-          {toggle => `Who is ${toggle.on ? '🕶❓' : 'awesome?'}`}
+          {(toggle) => `Who is ${toggle.on ? '🕶❓' : 'awesome?'}`}
         </Toggle.Consumer>
       </h1>
       <Subtitle />
@@ -224,7 +237,7 @@ function Article() {
   return (
     <div>
       <Toggle.Consumer>
-        {toggle =>
+        {(toggle) =>
           [
             'Once, I was in',
             toggle.on ? '🏫‍' : 'school',
@@ -236,7 +249,7 @@ function Article() {
       </Toggle.Consumer>
       <hr />
       <Toggle.Consumer>
-        {toggle =>
+        {(toggle) =>
           [
             'Without',
             toggle.on ? '👩‍🏫' : 'teachers',

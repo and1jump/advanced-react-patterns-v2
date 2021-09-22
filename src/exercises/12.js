@@ -1,7 +1,7 @@
 // Higher Order Components
 
 import React from 'react'
-// import hoistNonReactStatics from 'hoist-non-react-statics'
+import hoistNonReactStatics from 'hoist-non-react-statics'
 import {Switch} from '../switch'
 
 const ToggleContext = React.createContext({
@@ -11,8 +11,10 @@ const ToggleContext = React.createContext({
   getTogglerProps: () => ({}),
 })
 
-const callAll = (...fns) => (...args) =>
-  fns.forEach(fn => fn && fn(...args))
+const callAll =
+  (...fns) =>
+  (...args) =>
+    fns.forEach((fn) => fn && fn(...args))
 
 class Toggle extends React.Component {
   static defaultProps = {
@@ -69,7 +71,7 @@ class Toggle extends React.Component {
   internalSetState(changes, callback = () => {}) {
     let allChanges
     this.setState(
-      state => {
+      (state) => {
         const combinedState = this.getState(state)
         // handle function setState call
         const changesObject =
@@ -122,7 +124,19 @@ class Toggle extends React.Component {
 }
 
 function withToggle(Component) {
-  return Component
+  function Wrapper(props, ref) {
+    return (
+      <Toggle.Consumer>
+        {(toggleContext) => (
+          <Component {...props} toggle={toggleContext} ref={ref} />
+        )}
+      </Toggle.Consumer>
+    )
+  }
+  Wrapper.displayName = `withToggle(${
+    Component.displayName || Component.name
+  })`
+  return hoistNonReactStatics(React.forwardRef(Wrapper), Component)
   // The `withToggle` function is called a "Higher Order Component"
   // It's another way to share code and allows you to statically
   // create new components to render.
@@ -175,7 +189,7 @@ const Subtitle = withToggle(
 function Nav() {
   return (
     <Toggle.Consumer>
-      {toggle => (
+      {(toggle) => (
         <nav>
           <ul>
             <li>
@@ -199,11 +213,11 @@ function NavSwitch() {
     <div className="nav-switch">
       <div>
         <Toggle.Consumer>
-          {toggle => (toggle.on ? '🦄' : 'Enable Emoji')}
+          {(toggle) => (toggle.on ? '🦄' : 'Enable Emoji')}
         </Toggle.Consumer>
       </div>
       <Toggle.Consumer>
-        {toggle => (
+        {(toggle) => (
           <Switch
             {...toggle.getTogglerProps({
               on: toggle.on,
@@ -240,7 +254,7 @@ function Title() {
     <div>
       <h1>
         <Toggle.Consumer>
-          {toggle => `Who is ${toggle.on ? '🕶❓' : 'awesome?'}`}
+          {(toggle) => `Who is ${toggle.on ? '🕶❓' : 'awesome?'}`}
         </Toggle.Consumer>
       </h1>
       <Debug child="subtitle">
@@ -254,7 +268,7 @@ function Article() {
   return (
     <div>
       <Toggle.Consumer>
-        {toggle =>
+        {(toggle) =>
           [
             'Once, I was in',
             toggle.on ? '🏫‍' : 'school',
@@ -266,7 +280,7 @@ function Article() {
       </Toggle.Consumer>
       <hr />
       <Toggle.Consumer>
-        {toggle =>
+        {(toggle) =>
           [
             'Without',
             toggle.on ? '👩‍🏫' : 'teachers',

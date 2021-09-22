@@ -5,27 +5,23 @@ import {
 } from 'react-dom/test-utils'
 import chalk from 'chalk'
 import {renderToggle} from '../../test/utils'
-import Usage, {Debug} from '../exercises-final/12'
-// import Usage, {Debug} from '../exercises/12'
+// import Usage, {Debug} from '../exercises-final/12'
+import Usage, {Debug} from '../exercises/12'
 
 const findDebugInstance = (rootInstance, child) =>
-  findAllInRenderedTree(rootInstance, c => {
+  findAllInRenderedTree(rootInstance, (c) => {
     return (
       isCompositeComponentWithType(c, Debug) &&
       c.props.child === child
     )
   })[0]
 
-const getDebugChild = debugInstance =>
+const getDebugChild = (debugInstance) =>
   debugInstance._reactInternalFiber.child
 
 test('renders a toggle component', () => {
-  const {
-    toggleButton,
-    toggle,
-    container,
-    rootInstance,
-  } = renderToggle(<Usage />)
+  const {toggleButton, toggle, container, rootInstance} =
+    renderToggle(<Usage />)
   const debugInstance = findDebugInstance(rootInstance, 'subtitle')
   try {
     expect(debugInstance.childInstance.current).not.toBeNull()
@@ -79,8 +75,8 @@ test('renders a toggle component', () => {
 /*
 http://ws.kcd.im/?ws=react%20patterns&e=12&em=
 */
-test.skip('I submitted my elaboration and feedback', () => {
-  const submitted = false // change this when you've submitted!
+test('I submitted my elaboration and feedback', () => {
+  const submitted = true // change this when you've submitted!
   expect(submitted).toBe(true)
 })
 ////////////////////////////////
